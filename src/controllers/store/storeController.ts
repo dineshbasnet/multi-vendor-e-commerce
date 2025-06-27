@@ -80,7 +80,7 @@ class StoreController {
         next()
     }
 
-    static async createOrders(req: IExtendedRequest, res: Response) {
+    static async createOrders(req: IExtendedRequest, res: Response, next: NextFunction) {
         const storeIdClean = req.storeIdClean
 
         await sequelize.query(`
@@ -108,14 +108,33 @@ class StoreController {
         FOREIGN KEY (productId) REFERENCES products_${storeIdClean}(id)
       )
     `);
+        next()
+
+
+
+    }
+    static async createPaymentTable(req: IExtendedRequest, res: Response) {
+        const storeIdClean = req.storeIdClean;
+
+        await sequelize.query(`
+        CREATE TABLE IF NOT EXISTS payments_${storeIdClean} (
+        id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+        orderId VARCHAR(36) NOT NULL,
+        paymentMethod VARCHAR(50) NOT NULL,
+        amount DECIMAL(10, 2) NOT NULL,
+        status VARCHAR(50) DEFAULT 'completed',
+        transactionId VARCHAR(100),
+        paidAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (orderId) REFERENCES orders_${storeIdClean}(id)
+      )
+    `);
 
         return res.status(201).json({
             message: "Store and all related tables created successfully",
             storeId: storeIdClean,
         });
-
-
-
     }
 }
 
