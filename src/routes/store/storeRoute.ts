@@ -4,8 +4,9 @@ import asyncErrorHandler from "../../services/asyncErrorHandler"
 import StoreController from "../../controllers/store/storeController"
 
 
-const router:Router = express.Router()
+const router: Router = express.Router()
 
-router.route("/").post(Middleware.isLoggedIn,asyncErrorHandler(StoreController.createStore))
+router.route("/").post(Middleware.isLoggedIn, asyncErrorHandler(StoreController.createStore), asyncErrorHandler(StoreController.createProduct),
+    asyncErrorHandler(StoreController.createCategory), asyncErrorHandler(StoreController.createOrders))
 
 export default router

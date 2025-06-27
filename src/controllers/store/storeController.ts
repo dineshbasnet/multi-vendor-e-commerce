@@ -63,10 +63,10 @@ class StoreController {
             updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             )`)
 
-            next()
+        next()
     }
 
-    static async createCategory(req:IExtendedRequest,res:Response,next:NextFunction){
+    static async createCategory(req: IExtendedRequest, res: Response, next: NextFunction) {
         const storeIdClean = req.storeIdClean
 
         await sequelize.query(`CREATE TABLE IF NOT EXISTS category_${storeIdClean}(
@@ -78,6 +78,44 @@ class StoreController {
             )`)
 
         next()
+    }
+
+    static async createOrders(req: IExtendedRequest, res: Response) {
+        const storeIdClean = req.storeIdClean
+
+        await sequelize.query(`
+        CREATE TABLE IF NOT EXISTS orders_${storeIdClean} (
+        id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+        customerName VARCHAR(100),
+        customerPhone VARCHAR(20),
+        totalAmount DECIMAL(10,2),
+        status VARCHAR(50) DEFAULT 'pending',
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+        await sequelize.query(`
+        CREATE TABLE IF NOT EXISTS order_items_${storeIdClean} (
+        id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+        orderId VARCHAR(36),
+        productId VARCHAR(36),
+        quantity INT NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (orderId) REFERENCES orders_${storeIdClean}(id),
+        FOREIGN KEY (productId) REFERENCES products_${storeIdClean}(id)
+      )
+    `);
+
+        return res.status(201).json({
+            message: "Store and all related tables created successfully",
+            storeId: storeIdClean,
+        });
+
+
+
     }
 }
 

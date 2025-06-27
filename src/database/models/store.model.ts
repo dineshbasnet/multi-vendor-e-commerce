@@ -17,7 +17,8 @@ class Store extends Model {
     declare id: string
 
     @Column({
-        type: DataType.STRING
+        type: DataType.STRING,
+        unique:true
     })
     declare storeName: string
 
