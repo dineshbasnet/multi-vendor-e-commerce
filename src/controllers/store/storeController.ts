@@ -1,0 +1,84 @@
+import { NextFunction, Request, Response } from "express";
+import sequelize from "../../database/connection";
+import { nanoid } from 'nanoid';
+import User from "../../database/models/user.model";
+import { IExtendedRequest } from "../../Middlewares/type";
+import Store from "../../database/models/store.model";
+
+
+
+class StoreController {
+    static async createStore(req: IExtendedRequest, res: Response, next: NextFunction) {
+        const { storeName, storePhoneNumber, storeAddress } = req.body
+        const storePanNo = req.body.storePanNo || null
+        const storeVatNo = req.body.storeVatNo || null
+        const storeCode = nanoid(8);
+
+        console.log(nanoid)
+
+        if (!storeName || !storePhoneNumber || !storeAddress) {
+            return res.status(400).json({
+                message: "Please provide storeName,storePhoneNumber,storeAddress"
+            })
+        }
+
+        const store = await Store.create({
+            storeName: storeName,
+            storePhoneNumber: storePhoneNumber,
+            storeAddress: storeAddress,
+            storePanNo: storePanNo,
+            storeVatNo: storeVatNo,
+            userId: req.user?.id,
+            storeCode: storeCode
+        })
+
+        const storeIdClean = store.id.replace(/-/g, '_');
+
+
+        await User.update({
+            role: 'store'
+        }, {
+            where: {
+                id: req.user?.id
+            }
+        })
+        req.storeIdClean = storeIdClean
+        next()
+    }
+
+    static async createProduct(req: IExtendedRequest, res: Response, next: NextFunction) {
+
+        const storeIdClean = req.storeIdClean
+
+
+        await sequelize.query(`CREATE TABLE IF NOT EXISTS products_${storeIdClean}(
+            id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+            productName VARCHAR(255) NOT NULL,
+            productDescription TEXT,
+            productPrice DECIMAL(10, 2) NOT NULL,
+            stock INTEGER DEFAULT 0,
+            categoryId VARCHAR(36) NOT NULL REFERENCES category_${storeIdClean} (id),
+            productImage VARCHAR(255),
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )`)
+
+            next()
+    }
+
+    static async createCategory(req:IExtendedRequest,res:Response,next:NextFunction){
+        const storeIdClean = req.storeIdClean
+
+        await sequelize.query(`CREATE TABLE IF NOT EXISTS category_${storeIdClean}(
+        id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+        categoryName VARCHAR(100) NOT NULL, 
+        categoryDescription TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )`)
+
+        next()
+    }
+}
+
+export default StoreController
