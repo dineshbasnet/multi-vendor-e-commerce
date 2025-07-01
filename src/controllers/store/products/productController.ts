@@ -8,6 +8,7 @@ class ProductController {
     static async createProduct(req: IExtendedRequest, res: Response) {
 
         const storeIdClean = req.storeIdClean
+        console.log(storeIdClean)
         const { productName, productDescription, productPrice, stock, categoryId } = req.body
 
         if (!productName || !productDescription || !productPrice || !stock || !categoryId) {

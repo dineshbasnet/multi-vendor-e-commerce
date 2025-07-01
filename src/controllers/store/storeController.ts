@@ -14,7 +14,6 @@ class StoreController {
         const storeVatNo = req.body.storeVatNo || null
         const storeCode = nanoid(8);
 
-        console.log(nanoid)
 
         if (!storeName || !storePhoneNumber || !storeAddress) {
             return res.status(400).json({
@@ -113,7 +112,7 @@ class StoreController {
 
 
     }
-    static async createPaymentTable(req: IExtendedRequest, res: Response) {
+    static async createPaymentTable(req: IExtendedRequest, res: Response, next: NextFunction) {
         const storeIdClean = req.storeIdClean;
 
         await sequelize.query(`
@@ -131,11 +130,33 @@ class StoreController {
       )
     `);
 
+
+        next()
+    }
+
+    static async createReviewTable(req: IExtendedRequest, res: Response, next: NextFunction) {
+        const storeId = req.storeIdClean
+
+        await sequelize.query(`
+            CREATE TABLE IF NOT EXISTS reviews_${storeId}(
+            id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+            productId VARCHAR(36) NOT NULL,
+            userId VARCHAR(36) NOT NULL,
+            rating INT CHECK (rating >= 1  AND  rating <=5 ),
+            comment TEXT,
+            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (productId) REFERENCES products_${storeId}(id) ON DELETE CASCADE,
+            FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+
+            )
+            `)
         return res.status(201).json({
             message: "Store and all related tables created successfully",
-            storeId: storeIdClean,
+            storeId: storeId,
         });
     }
+
 }
 
 export default StoreController
