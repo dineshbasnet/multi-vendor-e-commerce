@@ -8,6 +8,7 @@ import productStoreRoute from './routes/store/product/productRoute'
 import categoryStoreRoute from './routes/store/category/categoryRoute'
 import wishlistRoute from './routes/global/wishlist/wishlistRoute'
 import addtocartRoute from './routes/global/addToCart/addTocartRoute'
+import orderRoute from './routes/store/order/orderRoute'
 
 app.use(express.json());
 
@@ -21,6 +22,7 @@ app.use("/api/store/category",categoryStoreRoute)
 
 app.use("/api/globals/wishlist",wishlistRoute)
 app.use("/api/globals/cart",addtocartRoute)
+app.use("/api/store/order",orderRoute)
 
 
 

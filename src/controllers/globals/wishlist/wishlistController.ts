@@ -40,7 +40,7 @@ class WishlistController {
 
     // Get all wishlist items with product details
     static async getUserWishlist(req: IExtendedRequest, res: Response) {
-        try {
+        
             const userId = req.user?.id;
 
             const items = await Wishlist.findAll({ where: { userId } });
@@ -66,10 +66,7 @@ class WishlistController {
             );
 
             res.json({ data: enrichedWishlist });
-        } catch (err) {
-            console.error(err);
-            res.status(500).json({ message: "Error fetching wishlist" });
-        }
+       
     }
 
     // Remove item from wishlist
