@@ -1,6 +1,7 @@
 
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from "sequelize-typescript";
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from "sequelize-typescript";
 import User from "./user.model";
+import Wishlist from "./wishlist.model";
 
 @Table({
     tableName: 'stores',
@@ -61,6 +62,9 @@ class Store extends Model {
 
     @BelongsTo(() => User)
     declare user: User
+
+      @HasMany(() => Wishlist) 
+  declare wishlists: Wishlist[];
 
 }
 

@@ -6,7 +6,6 @@ import { IExtendedRequest } from "../../Middlewares/type";
 import Store from "../../database/models/store.model";
 
 
-
 class StoreController {
     static async createStore(req: IExtendedRequest, res: Response, next: NextFunction) {
         const { storeName, storePhoneNumber, storeAddress } = req.body
@@ -109,8 +108,6 @@ class StoreController {
     `);
         next()
 
-
-
     }
     static async createPaymentTable(req: IExtendedRequest, res: Response, next: NextFunction) {
         const storeIdClean = req.storeIdClean;
@@ -129,8 +126,6 @@ class StoreController {
         FOREIGN KEY (orderId) REFERENCES orders_${storeIdClean}(id)
       )
     `);
-
-
         next()
     }
 
@@ -140,14 +135,12 @@ class StoreController {
         await sequelize.query(`
             CREATE TABLE IF NOT EXISTS reviews_${storeId}(
             id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-            productId VARCHAR(36) NOT NULL,
-            userId VARCHAR(36) NOT NULL,
             rating INT CHECK (rating >= 1  AND  rating <=5 ),
             comment TEXT,
+            productId VARCHAR(36) REFERENCES products_${storeId}(id),
+            userId CHAR(36) REFERENCES users(id),
             createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (productId) REFERENCES products_${storeId}(id) ON DELETE CASCADE,
-            FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+            updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 
             )
             `)
@@ -156,7 +149,6 @@ class StoreController {
             storeId: storeId,
         });
     }
-
 }
 
 export default StoreController

@@ -9,3 +9,4 @@ router.route("/register").post(asyncErrorHandler(AuthController.registerUser))
 router.route("/login").post(asyncErrorHandler(AuthController.loginUser))
 
 export default router
+
