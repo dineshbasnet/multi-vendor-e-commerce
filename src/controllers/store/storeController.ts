@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import sequelize from "../../database/connection";
 import { nanoid } from 'nanoid';
 import User from "../../database/models/user.model";
@@ -13,11 +13,18 @@ class StoreController {
         const storeVatNo = req.body.storeVatNo || null
         const storeCode = nanoid(8);
 
-
         if (!storeName || !storePhoneNumber || !storeAddress) {
             return res.status(400).json({
                 message: "Please provide storeName,storePhoneNumber,storeAddress"
             })
+        }
+
+        // Prevent user from creating multiple stores
+        const existingStore = await Store.findOne({ where: { userId: req.user?.id } });
+        if (existingStore) {
+            return res.status(400).json({
+                message: "User already owns a store."
+            });
         }
 
         const store = await Store.create({
@@ -25,7 +32,7 @@ class StoreController {
             storePhoneNumber: storePhoneNumber,
             storeAddress: storeAddress,
             storePanNo: storePanNo,
-            storeVatNo: storeVatNo,
+            storeVatNo: storeVatNo, 
             userId: req.user?.id,
             storeCode: storeCode
         })
@@ -86,10 +93,12 @@ class StoreController {
         id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
         customerName VARCHAR(100),
         customerPhone VARCHAR(20),
+        customerAddress TEXT,
         totalAmount DECIMAL(10,2),
-        status VARCHAR(50) DEFAULT 'pending',
+        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'shipped', 'delivered', 'cancelled')),
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
       )
     `);
 
@@ -152,3 +161,4 @@ class StoreController {
 }
 
 export default StoreController
+
